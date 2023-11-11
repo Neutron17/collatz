@@ -1,58 +1,89 @@
-#include <aio.h>
-#include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <math.h>
 
-#include "error.h"
-#include "global.h"
-#include "log.h"
-#include "lt.h"
-#include "exitCodes.h"
-#include "stdext.h"
-#include "arr.h"
+// ax + b + (c/d)
+typedef struct {
+	double a;
+	int b, c, d;
+} Num;
 
-#define BUFF_SZ 16
+int gcd(int a, int b);
 
-void printer(void *data) {
-	printf("%d\t", *((int *)data));
-}
+void numUpdate(Num *n);
+void numPrint(Num n);
+void numF(Num *n);
+void numG(Num *n);
+void numIF(Num *n);
+void numIG(Num *n);
 
 int main(int argc, char *argv[]) {
-	init((LT_t) {
-			.handlers = (struct LTHandler[]) { 
-				{
-					(ltfunc_init) loginit, 
-					{ (void *)L_ALL, (void *)L_ALL },
-					(ltfunc_def) logdestroy,
-					NULL
-				} 
-			}, .size = 1});
-	LOG(L_INFO, "Hello World");
+	Num n = { 1, 0, 0, 1 };
+	numIF(&n);
+	numIF(&n);
+	numPrint(n);
+	numIG(&n);
+	numPrint(n);
+	return 0;
+}
 
-	Array_t arr;
-	UNWRAP_TO_COMPLEX(array_init(int, 10), arr, Array_t);
-	int b = 1;
-	for(int i = 0; i < 20; i++) {
-		unwrap(array_add(&arr, 0, &b));
-		array_print(arr);
-		b++;
+void numF(Num *n) {
+	n->a /= 2;
+	n->b /= 2;
+	n->d *= 2;
+	if((n->b % 2) != 0)
+		n->c += (n->d >> 1);
+}
+void numG(Num *n) {
+	n->a *= 3;
+	n->b *= 3;
+	n->d *= 3;
+	n->b++;
+	numUpdate(n);
+}
+void numIF(Num *n) {
+	n->a *= 2;
+	if(n->c != 0)
+		n->b *= 2;
+	n->c *= 2;
+	numUpdate(n);
+}
+void numIG(Num *n) {
+	n->b--;
+	n->a /= 3;
+	 n->c += n->b * n->d;
+	 n->b = 0;
+	n->d *= 3;
+	numPrint(*n);
+	numUpdate(n);
+}
+
+void numUpdate(Num *n) {
+	int g = gcd(n->c, n->d);
+	if(g != 1) {
+		n->c /= g;
+		n->d /= g;
 	}
-	Array_t sub;
-	//array_for_each(arr, printer);
-	//puts("");
-	array_print(arr);
-	UNWRAP_TO_COMPLEX(array_sub_array(arr, 5, 10), sub, Array_t);
+up:
+	if(n->c >= n->d) {
+		n->c -= n->d;
+		n->b++;
+		goto up;
+	}
+}
 
-	array_for_each(arr, printer);
-	puts("");
-	printf("%d\n", sub.used);
-	array_for_each(sub, printer);
-	puts("");
+void numPrint(Num n) {
+	printf("%lfx + %d(%d/%d)\n", n.a, n.b, n.c, n.d);
+}
 
-	array_destroy(&sub);
-	array_destroy(&arr);
-
-	cleanUp(E_SUCCESS);
+int gcd(int a, int b) {
+	if(a <= 0 || b <= 0)
+		return 1;
+	int temp;
+	while (b != 0) {
+		temp = a % b;
+		a = b;
+		b = temp;
+	}
+	return a;
 }
 

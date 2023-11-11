@@ -1,6 +1,6 @@
 CC = cc
 
-PNAME = base
+PNAME = collatz
 
 SRC  = $(shell find src -name "*.c")
 OBJ  = $(SRC:.c=.o)
@@ -15,8 +15,7 @@ CCFLAGS += -Wall
 CCFLAGS += -pedantic
 
 LDFLAGS  = $(INCFLAGS)
-LDFLAGS += -lpthread
-LDFLAGS += -lrt
+LDFLAGS += -lm
 
 INSTALL_PATH = /usr/local/bin
 
